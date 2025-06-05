@@ -46,112 +46,24 @@
 |-------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | Не зарегестрированный                                                                                                               | Не зарегестрированный                                                                                                               | Зарегестированный                                                                                                                   |
 
-
 ## Тех. артефакты
+
+### OpenAPI Specification
+
+- [Swagger](https://tiny-storage.online/swagger/index.html)
+
+### Диаграмма прецедентов
+
+![](/assets/img/usecase.png)
 
 ### Системная архитектура
 
-```plantuml
-@startuml
-
-left to right direction
-
-node "Yandex Cloud" as yc <<cloudSystem>> {
-    node "Ubuntu Server" as ubuntu <<OS>> {
-        node "Docker Environment" as docker <<executionEnvironment>> {
-            node "Watchtower" as watchtower <<application>> {
-                component "Watchtower" as watchtower_app <<application>> #white
-            }
-
-            frame "Docker Compose" as dev #line.dashed; {
-                node "Frontend Container" as dev_frontend_container <<container>> {
-                    component "Nginx" as dev_nginx <<web server>> #white    
-                }
-                node "Backend Container" as dev_backend_container <<container>> {
-                    component "Kestrel" as dev_kestrel <<web server>> #white
-                }
-                node "Database Container" as dev_database_container <<container>> {
-                    component "PostgreSQL" as dev_postgres <<DBMS>> #white
-                }
-
-                node "Keycloak Container" as dev_keycloak_container <<container>> {
-                    component "Keycloak" as dev_keycloak <<application>> #white
-                }
-
-                node "Grafana Container" as dev_grafana_container <<container>> {
-                    component "Grafana" as dev_grafana <<application>> #white
-                }
-
-                node "Prometheus Container" as dev_prometheus_container <<container>> {
-                    component "Prometheus" as dev_prometheus <<application>> #white
-                }
-
-                node "Jaeger Container" as dev_jaeger_container <<container>> {
-                    component "Jaeger" as dev_jaeger <<application>> #white
-                }
-
-                dev_kestrel -- dev_grafana : <<protocol>>\nHTTP
-                dev_kestrel -- dev_prometheus : <<protocol>>\nHTTP
-                dev_kestrel -- dev_jaeger : <<protocol>>\nHTTP
-                dev_keycloak - dev_kestrel : <<protocol>>\nHTTPS
-                dev_keycloak - dev_postgres : <<protocol>>\nODBC
-                dev_postgres -- dev_kestrel : <<protocol>>\nODBC
-                dev_nginx -- dev_kestrel : <<protocol>>\nHTTPS
-
-                dev_frontend_container <. watchtower_app : <<watch>>
-                dev_backend_container <. watchtower_app : <<watch>>
-            }
-        }
-    } 
-}
-
-node "PC" as pc <<device>> {
-    node "OS" as pd_os <<OS>> {
-        component "Browser" as browser <<web browser>> #white
-    }
-}
-
-node "Mobile" as mobile <<device>> {
-    node "Android/IOS" as mobile_os <<OS>> {
-        component ".NET MAUI App" as maui <<application>> #white
-    }
-}
-
-browser -down- dev_nginx : <<protocol>>\nHTTPS
-maui -down- dev_kestrel : <<protocol>>\nHTTPS
-maui -[hidden]- dev_nginx
-
-@enduml
-```
-
+![](/assets/img/deployment.png)
+    
 ### ERD
 
-```plantuml
-@startuml
-left to right direction
-hide circle
+![](/assets/img/erd.png)
 
-rectangle "tiny-storage" as storage <<schema>> #white;line:black;line.dashed;text:black {
-entity "**items**" as items <<table>> {
-*id: uuid <<PK>>
---
-*name: text
-*taken_by: integer
-*created_at: timestamptz
-*updated_at: timestamptz
-}
+### Диаграмма компонентов (Backend)
 
-    entity "**item_audits**" as item_audits <<table>> {
-        *id: uuid <<PK>>
-        --
-        *item_id: uuid <<FK>>
-        *edited_by: integer
-        *property: text
-        *value: text
-        *created_at: timestamptz
-    }
-
-    items::id ||--|{ item_audits::item_id
-}
-@enduml
-```
+![](/assets/img/component-diagram.png)
